@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم Alnasrawy | Step 2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; background-color: #0F0F1A; color: white; margin: 0; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .tab-active { background-color: #FFC107; color: black; font-weight: bold; }
+        .hidden { display: none; }
+        .section-fade { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .custom-scroll::-webkit-scrollbar { width: 5px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #FFC107; border-radius: 10px; }
+
+        /* 🔳 Strict Square Logos */
+        .logo-container { width: 100%; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 1rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); position: relative; display: flex; items-center; justify-content: center; }
+        .logo-container img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
+        .logo-container:hover img { transform: scale(1.1); }
+        .logo-fallback { font-size: 1.5rem; font-weight: bold; color: #FFC107; opacity: 0.5; }
+    </style>
+</head>
+<body class="flex flex-col md:flex-row h-screen overflow-hidden">
+
+    <!-- 🔑 Login Overlay -->
+    <div id="login-overlay" class="fixed inset-0 bg-[#0F0F1A] z-[500] flex flex-col items-center justify-center p-8">
+        <div class="glass p-10 rounded-3xl max-w-sm w-full text-center shadow-2xl">
+            <h2 class="text-2xl font-bold mb-6 text-[#FFC107]">تسجيل الدخول</h2>
+            <input type="password" id="input-pin" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-center text-2xl mb-6 focus:outline-none focus:border-[#FFC107]" placeholder="الرمز السري">
+            <button id="btn-login" class="w-full bg-[#FFC107] text-black font-bold py-4 rounded-xl hover:bg-[#FFD600] transition-all">دخول</button>
+        </div>
+    </div>
+
+    <!-- 📱 Sidebar -->
+    <aside class="w-full md:w-64 bg-[#090912] border-l border-white/5 flex flex-col p-6 space-y-8 z-50">
+        <div class="text-center">
+            <h1 class="text-2xl font-bold text-white">Alnasrawy <span class="text-[#FFC107]">TV</span></h1>
+            <p class="text-[10px] text-gray-500 mt-1 uppercase tracking-widest">Dashboard v2.0</p>
+        </div>
+
+        <nav class="flex flex-col space-y-2">
+            <button id="nav-dashboard" class="text-right p-4 rounded-2xl tab-active flex items-center justify-between group">
+                <span>🏠 الواجهة الرئيسية</span>
+            </button>
+            <button id="nav-live" class="text-right p-4 rounded-2xl text-gray-400 hover:bg-white/5 transition-all flex items-center justify-between group">
+                <span>📺 البث المباشر</span>
+            </button>
+            <button id="nav-movies" class="text-right p-4 rounded-2xl text-gray-400 hover:bg-white/5 transition-all flex items-center justify-between group">
+                <span>🎬 إعدادات الأفلام</span>
+            </button>
+            <button id="nav-series" class="text-right p-4 rounded-2xl text-gray-400 hover:bg-white/5 transition-all flex items-center justify-between group">
+                <span>🍿 إعدادات المسلسلات</span>
+            </button>
+            <button id="nav-matches" class="text-right p-4 rounded-2xl text-gray-400 hover:bg-white/5 transition-all flex items-center justify-between group">
+                <span>⚽ إعدادات المباريات</span>
+            </button>
+            <button id="nav-maintenance" class="text-right p-4 rounded-2xl text-gray-400 hover:bg-white/5 transition-all flex items-center justify-between group">
+                <span>🛠️ صيانة وفحص الروابط</span>
+            </button>
+            <button id="nav-settings" class="text-right p-4 rounded-2xl text-gray-400 hover:bg-white/5 transition-all flex items-center justify-between group">
+                <span>⚙️ إعدادات التطبيق</span>
+            </button>
+            <button id="nav-updates" class="text-right p-4 rounded-2xl text-gray-400 hover:bg-white/5 transition-all flex items-center justify-between group">
+                <span>🚀 التحديثات الذكية</span>
+            </button>
+        </nav>
+
+        <div class="mt-auto">
+            <div id="connection-status" class="text-[10px] text-yellow-500 italic">جاري الاتصال...</div>
+        </div>
+    </aside>
+
+    <!-- 🖼️ Main Content Area -->
+    <main class="flex-1 p-3 md:p-5 flex flex-col h-full min-h-0 overflow-hidden space-y-2">
+
+        <!-- SECTION: DASHBOARD -->
+        <section id="section-dashboard" class="space-y-8 max-w-6xl overflow-y-auto flex-1 pr-2 custom-scroll">
+            <header>
+                <h2 class="text-3xl font-bold">مرحباً بك يا زعيم! 👋</h2>
+                <p class="text-gray-400 text-sm mt-1">إليك نظرة سريعة على أداء المنصة الآن</p>
+            </header>
+
+            <!-- 📊 User Stats Dashboard -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="glass p-8 rounded-[2.5rem] border-white/5 flex flex-col items-center justify-center text-center">
+                    <p class="text-gray-500 text-xs mb-2">إجمالي المشتركين</p>
+                    <h3 id="dash-total-users" class="text-5xl font-black text-white italic">0</h3>
+                </div>
+                <div class="glass p-8 rounded-[2.5rem] border-green-500/10 flex flex-col items-center justify-center text-center relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-green-500/5 opacity-0 group-hover:opacity-100 transition-all"></div>
+                    <p class="text-green-500/50 text-xs mb-2 font-bold">نشط الآن 🟢</p>
+                    <h3 id="dash-online-users" class="text-5xl font-black text-green-500 italic drop-shadow-[0_0_15px_rgba(34,197,94,0.3)]">0</h3>
+                </div>
+                <div class="glass p-8 rounded-[2.5rem] border-white/5 flex flex-col items-center justify-center text-center">
+                    <p class="text-gray-500 text-xs mb-2">أوفلاين</p>
+                    <h3 id="dash-offline-users" class="text-5xl font-black text-gray-400 italic">0</h3>
+                </div>
+            </div>
+
+            <!-- 📺 Content Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="glass p-8 rounded-[3rem] border-[#FFC107]/10 flex items-center justify-between">
+                    <div>
+                        <p class="text-[10px] text-[#FFC107] font-bold mb-1 uppercase tracking-widest">📡 إجمالي القنوات</p>
+                        <h4 id="dash-total-channels" class="text-4xl font-black text-white">0</h4>
+                    </div>
+                    <div class="w-16 h-16 bg-[#FFC107]/10 rounded-3xl flex items-center justify-center text-3xl">📺</div>
+                </div>
+                <div class="glass p-8 rounded-[3rem] border-blue-500/10 flex items-center justify-between">
+                    <div>
+                        <p class="text-[10px] text-blue-400 font-bold mb-1 uppercase tracking-widest">🎬 الأفلام</p>
+                        <h4 id="dash-total-movies" class="text-4xl font-black text-white">0</h4>
+                    </div>
+                    <div class="w-16 h-16 bg-blue-500/10 rounded-3xl flex items-center justify-center text-3xl">🎬</div>
+                </div>
+                <div class="glass p-8 rounded-[3rem] border-purple-500/10 flex items-center justify-between">
+                    <div>
+                        <p class="text-[10px] text-purple-400 font-bold mb-1 uppercase tracking-widest">🍿 المسلسلات</p>
+                        <h4 id="dash-total-series" class="text-4xl font-black text-white">0</h4>
+                    </div>
+                    <div class="w-16 h-16 bg-purple-500/10 rounded-3xl flex items-center justify-center text-3xl">🍿</div>
+                </div>
+            </div>
+
+            <!-- ⚠️ Urgent Warnings -->
+            <div id="dash-warning-card" class="hidden glass p-8 rounded-[3rem] border-red-500/20 bg-red-500/5 flex items-center justify-between animate-pulse">
+                <div class="flex items-center space-x-6 space-x-reverse">
+                    <div class="text-4xl">⚠️</div>
+                    <div>
+                        <h4 class="text-xl font-bold text-red-500">تحذير: روابط معطلة مكتشفة!</h4>
+                        <p id="dash-broken-msg" class="text-red-500/60 text-xs mt-1">يوجد 0 روابط لا تعمل، يرجى الصيانة فوراً.</p>
+                    </div>
+                </div>
+                <button onclick="switchSection(secMaintenance, navMaintenance)" class="bg-red-500 text-white font-bold px-8 py-4 rounded-2xl hover:bg-red-600 transition-all">إصلاح الآن 🛠️</button>
+            </div>
+
+            <!-- 🚀 Quick Actions -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button onclick="switchSection(secUpdates, navUpdates)" class="glass p-6 rounded-3xl border-blue-500/10 flex items-center space-x-4 space-x-reverse hover:bg-blue-600/10 transition-all group">
+                    <span class="text-2xl bg-blue-600/10 p-3 rounded-2xl group-hover:scale-110 transition-all">🔔</span>
+                    <span class="font-bold text-white">إرسال إشعار عاجل للمشتركين</span>
+                </button>
+                <button onclick="switchSection(secLive, navLive)" class="glass p-6 rounded-3xl border-yellow-500/10 flex items-center space-x-4 space-x-reverse hover:bg-yellow-600/10 transition-all group">
+                    <span class="text-2xl bg-yellow-600/10 p-3 rounded-2xl group-hover:scale-110 transition-all">📥</span>
+                    <span class="font-bold text-white">استيراد محتوى جديد (Xtream)</span>
+                </button>
+            </div>
+
+            <!-- Spacer for bottom scroll -->
+            <div class="h-10"></div>
+        </section>
+
+        <!-- SECTION: MATCHES -->
+        <section id="section-matches" class="hidden space-y-8 max-w-4xl overflow-y-auto flex-1 pr-2 custom-scroll">
+            <header>
+                <h2 class="text-3xl font-bold">إدارة المباريات</h2>
+                <p class="text-gray-400 text-sm mt-1">تحديث روابط المصادر التلقائية</p>
+            </header>
+
+            <div class="glass p-8 rounded-3xl shadow-xl">
+                <h3 class="text-lg font-bold text-[#FFC107] mb-4">رابط مصدر المباريات (GitHub)</h3>
+                <div class="flex flex-col space-y-4">
+                    <input type="text" id="input-matches-url"
+                        class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-[#FFC107]"
+                        placeholder="https://raw.githubusercontent.com/...">
+                    <button id="btn-save-url" class="bg-[#FFC107] text-black font-bold py-4 rounded-xl hover:bg-[#FFD600] transition-all">حفظ الرابط</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: MOVIES -->
+        <section id="section-movies" class="hidden flex-1 flex flex-col h-full min-h-0 overflow-hidden space-y-3">
+            <!-- 📍 Fixed Top Header Container -->
+            <div class="flex-none sticky top-0 z-[100] bg-[#0F0F1A] pb-2 pt-1 border-b border-gray-800/50 backdrop-blur-md space-y-2">
+
+                <!-- 🔧 Movies Wrench Action Bar (Android Parity) -->
+                <div id="movie-wrench-bar" class="flex items-center justify-between glass p-3 rounded-3xl border-[#FFC107]/20 hidden">
+                    <div class="flex items-center space-x-3 space-x-reverse">
+                        <button id="btn-exit-movie-selection" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-red-600/20 text-red-500 transition-all text-lg">✕</button>
+                        <span id="movie-selected-count" class="text-sm font-bold text-[#FFC107] mr-2">0 محدد</span>
+                    </div>
+                    <div class="flex items-center space-x-2 space-x-reverse">
+                        <button id="btn-movie-select-all" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-[10px] font-bold hover:bg-white/10 transition-all">تحديد الكل</button>
+                        <div class="w-[1px] h-6 bg-white/10 mx-1"></div>
+                        <button id="btn-bulk-movie-move" class="flex items-center px-4 py-2 rounded-xl bg-blue-600/20 text-blue-400 text-[10px] font-bold hover:bg-blue-600 hover:text-white transition-all">نقل 🚀</button>
+                        <button id="btn-bulk-movie-merge" class="flex items-center px-4 py-2 rounded-xl bg-purple-600/20 text-purple-400 text-[10px] font-bold hover:bg-purple-600 hover:text-white transition-all">دمج 🧬</button>
+                        <button id="btn-bulk-movie-delete" class="flex items-center px-4 py-2 rounded-xl bg-red-600/20 text-red-500 text-[10px] font-bold hover:bg-red-600 hover:text-white transition-all">حذف 🗑️</button>
+                    </div>
+                </div>
+
+                <header id="movie-header" class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl md:text-2xl font-bold">إدارة الأفلام 🎬</h2>
+                        <p class="text-gray-400 text-xs mt-0.5">تنظيم الأفلام والسيرفرات</p>
+                    </div>
+                    <div class="flex space-x-2 md:space-x-4 space-x-reverse">
+                        <button id="btn-movie-management-trigger" class="w-10 h-10 border-2 border-[#FFC107]/50 rounded-xl flex items-center justify-center text-xl hover:bg-[#FFC107] hover:text-black hover:border-[#FFC107] shadow-lg shadow-yellow-600/10 transition-all group" title="إدارة المحتوى">
+                            <span class="group-hover:scale-125 transition-transform">⚡</span>
+                        </button>
+                        <button id="btn-toggle-movie-wrench" class="w-10 h-10 glass rounded-xl flex items-center justify-center text-base hover:bg-white/10 transition-all">🔧</button>
+                        <button id="btn-add-movie-category" class="bg-white/5 border border-white/10 text-white font-bold px-3 py-2 rounded-xl text-[10px] md:text-xs hover:bg-white/10 transition-all">+ تصنيف</button>
+                        <button id="btn-add-movie" class="bg-[#FFC107] text-black font-bold px-4 py-2 rounded-xl text-xs hover:scale-105 transition-all">+ فيلم جديد</button>
+                    </div>
+                </header>
+
+                <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4 md:space-x-reverse">
+                    <div class="flex-1 relative">
+                        <input type="text" id="input-search-movies" placeholder="ابحث عن فيلم في كافة التصنيفات..." class="w-full bg-black/40 border border-white/10 rounded-xl p-2 pr-10 text-xs text-white outline-none focus:border-[#FFC107]">
+                        <span class="absolute right-3 top-2.5 opacity-30 text-xs">🔍</span>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- 📜 Movies Accordion View (Gold Standard Pattern) -->
+            <div id="movies-accordion" class="flex-1 overflow-y-auto pr-2 pt-4 space-y-4 custom-scroll">
+                <p class="text-gray-500 animate-pulse text-center py-20">جاري تحميل الأفلام والتصنيفات...</p>
+            </div>
+        </section>
+
+        <!-- SECTION: SERIES -->
+        <section id="section-series" class="hidden flex-1 flex flex-col h-full min-h-0 overflow-hidden space-y-3">
+            <!-- 📍 Fixed Top Header Container -->
+            <div class="flex-none sticky top-0 z-[100] bg-[#0F0F1A] pb-2 pt-1 border-b border-gray-800/50 backdrop-blur-md space-y-2">
+
+                <!-- 🔧 Series Wrench Action Bar (Gold Standard Parity) -->
+                <div id="series-wrench-bar" class="flex items-center justify-between glass p-3 rounded-3xl border-[#FFC107]/20 hidden">
+                    <div class="flex items-center space-x-3 space-x-reverse">
+                        <button id="btn-exit-series-selection" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-red-600/20 text-red-500 transition-all text-lg">✕</button>
+                        <span id="series-selected-count" class="text-sm font-bold text-[#FFC107] mr-2">0 محدد</span>
+                    </div>
+                    <div class="flex items-center space-x-2 space-x-reverse">
+                        <button id="btn-series-select-all" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-[10px] font-bold hover:bg-white/10 transition-all">تحديد الكل</button>
+                        <div class="w-[1px] h-6 bg-white/10 mx-1"></div>
+                        <button id="btn-bulk-series-move" class="flex items-center px-4 py-2 rounded-xl bg-blue-600/20 text-blue-400 text-[10px] font-bold hover:bg-blue-600 hover:text-white transition-all">نقل 🚀</button>
+                        <button id="btn-bulk-series-merge" class="flex items-center px-4 py-2 rounded-xl bg-purple-600/20 text-purple-400 text-[10px] font-bold hover:bg-purple-600 hover:text-white transition-all">دمج 🧬</button>
+                        <button id="btn-bulk-series-delete" class="flex items-center px-4 py-2 rounded-xl bg-red-600/20 text-red-500 text-[10px] font-bold hover:bg-red-600 hover:text-white transition-all">حذف 🗑️</button>
+                    </div>
+                </div>
+
+                <header id="series-header" class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl md:text-2xl font-bold">إدارة المسلسلات 🍿</h2>
+                        <p class="text-gray-400 text-xs mt-0.5">تنظيم المواسم والحلقات</p>
+                    </div>
+                    <div class="flex space-x-2 md:space-x-4 space-x-reverse">
+                        <button id="btn-series-management-trigger" class="w-10 h-10 border-2 border-[#FFC107]/50 rounded-xl flex items-center justify-center text-xl hover:bg-[#FFC107] hover:text-black hover:border-[#FFC107] shadow-lg shadow-yellow-600/10 transition-all group" title="إدارة المحتوى">
+                            <span class="group-hover:scale-125 transition-transform">⚡</span>
+                        </button>
+                        <button id="btn-toggle-series-wrench" class="w-10 h-10 glass rounded-xl flex items-center justify-center text-base hover:bg-white/10 transition-all">🔧</button>
+                        <button id="btn-add-series-category" class="bg-white/5 border border-white/10 text-white font-bold px-3 py-2 rounded-xl text-[10px] md:text-xs hover:bg-white/10 transition-all">+ تصنيف</button>
+                        <button id="btn-add-series" class="bg-[#FFC107] text-black font-bold px-4 py-2 rounded-xl text-xs hover:scale-105 transition-all">+ مسلسل جديد</button>
+                    </div>
+                </header>
+
+                <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4 md:space-x-reverse">
+                    <div class="flex-1 relative">
+                        <input type="text" id="input-search-series" placeholder="ابحث عن مسلسل في كافة التصنيفات..." class="w-full bg-black/40 border border-white/10 rounded-xl p-2 pr-10 text-xs text-white outline-none focus:border-[#FFC107]">
+                        <span class="absolute right-3 top-2.5 opacity-30 text-xs">🔍</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 📜 Series Accordion View (Gold Standard Pattern) -->
+            <div id="series-accordion" class="flex-1 overflow-y-auto pr-2 pt-4 space-y-4 custom-scroll">
+                <p class="text-gray-500 animate-pulse text-center py-20">جاري تحميل المسلسلات والتصنيفات...</p>
+            </div>
+        </section>
+
+        <!-- SECTION: MAINTENANCE -->
+        <section id="section-maintenance" class="hidden flex-1 flex flex-col h-full min-h-0 overflow-hidden space-y-4">
+            <header class="flex justify-between items-center flex-none">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">مركز صيانة الروابط 🛠️</h2>
+                    <p class="text-gray-400 text-xs mt-1">فحص حالة القنوات والسيرفرات والتنظيف التلقائي</p>
+                </div>
+                <div class="flex space-x-3 space-x-reverse">
+                    <button id="btn-clear-recovered" class="hidden bg-green-500/10 text-green-500 border border-green-500/20 px-4 py-2 rounded-xl text-[10px] font-bold hover:bg-green-500 hover:text-white transition-all">تنظيف القائمة المستعادة ✨</button>
+                    <button id="btn-delete-all-broken" class="hidden bg-red-600 text-white px-4 py-2 rounded-xl text-[10px] font-bold hover:bg-red-700 transition-all">حذف كافة الروابط المعطلة 🗑️</button>
+                    <div class="flex bg-white/5 p-1 rounded-2xl border border-white/10 items-center">
+                        <button id="btn-start-full-scan" class="bg-[#FFC107] text-black font-bold px-6 py-2 rounded-xl text-xs hover:scale-105 transition-all">بدء فحص شامل ⚡</button>
+                        <button id="btn-start-scan-broken" class="text-[#FFC107] px-4 py-2 rounded-xl text-xs font-bold hover:bg-[#FFC107]/10 transition-all">فحص المعطلة فقط 🔍</button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Status Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 flex-none">
+                <div class="glass p-4 rounded-3xl border-green-500/10 text-center">
+                    <p class="text-[10px] text-gray-500 mb-1">روابط تعمل</p>
+                    <p id="stat-working-links" class="text-2xl font-black text-green-500">0</p>
+                </div>
+                <div class="glass p-4 rounded-3xl border-red-500/10 text-center">
+                    <p class="text-[10px] text-gray-500 mb-1">روابط معطلة (3+ فشل)</p>
+                    <p id="stat-broken-links" class="text-2xl font-black text-red-500">0</p>
+                </div>
+                <div class="glass p-4 rounded-3xl border-yellow-500/10 text-center">
+                    <p class="text-[10px] text-gray-500 mb-1">تمت استعادتها</p>
+                    <p id="stat-recovered-links" class="text-2xl font-black text-yellow-500">0</p>
+                </div>
+                <div class="glass p-4 rounded-3xl border-blue-500/10 text-center">
+                    <p class="text-[10px] text-gray-500 mb-1">مستبعدة من الفحص</p>
+                    <p id="stat-excluded-links" class="text-2xl font-black text-blue-400">0</p>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div id="scan-progress-area" class="hidden flex-none glass p-4 rounded-3xl space-y-2 border-[#FFC107]/20">
+                <!-- ... existing progress ... -->
+            </div>
+
+            <!-- Bulk Selection Actions -->
+            <div id="maintenance-bulk-bar" class="hidden flex-none bg-[#FFC107]/10 p-3 rounded-2xl border border-[#FFC107]/20 flex items-center justify-between">
+                <div class="flex items-center space-x-4 space-x-reverse">
+                    <label class="flex items-center space-x-2 space-x-reverse cursor-pointer">
+                        <input type="checkbox" id="check-select-all-maintenance" class="w-4 h-4 accent-[#FFC107]">
+                        <span class="text-xs font-bold text-white">تحديد الكل</span>
+                    </label>
+                    <span id="maintenance-selected-count" class="text-[10px] bg-[#FFC107] text-black px-2 py-0.5 rounded-lg font-black">0 محدد</span>
+                </div>
+                <div class="flex items-center space-x-2 space-x-reverse">
+                    <button id="btn-bulk-recover-maintenance" class="px-4 py-2 bg-yellow-500/20 text-yellow-500 rounded-xl text-[10px] font-bold hover:bg-yellow-500 hover:text-white transition-all">استعادة المختار 🔄</button>
+                    <button id="btn-bulk-delete-maintenance" class="px-4 py-2 bg-red-500/20 text-red-500 rounded-xl text-[10px] font-bold hover:bg-red-500 hover:text-white transition-all">حذف المختار 🗑️</button>
+                </div>
+            </div>
+
+            <!-- Results List -->
+            <div class="flex-1 overflow-hidden flex flex-col space-y-2">
+                <h3 class="text-xs font-bold text-gray-400 flex items-center flex-none">
+                    <span>نتائج الفحص والتحذيرات</span>
+                    <span class="mx-2 w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                </h3>
+                <div id="maintenance-results-list" class="flex-1 overflow-y-auto pr-2 space-y-3 custom-scroll pb-10">
+                    <p class="text-center py-20 text-gray-600 italic text-sm">لا توجد تنبيهات حالياً. اضغط "بدء الفحص" للتأكد من سلامة الروابط.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: SETTINGS -->
+        <section id="section-settings" class="hidden flex-1 flex flex-col h-full min-h-0 overflow-hidden space-y-4">
+            <header class="flex justify-between items-center flex-none">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">إعدادات التطبيق العامة ⚙️</h2>
+                    <p class="text-gray-400 text-xs mt-1">إدارة الأمان، الأقسام، ومعلومات التحديث</p>
+                </div>
+                <button id="btn-save-config" class="bg-[#FFC107] text-black font-black px-8 py-3 rounded-2xl text-xs hover:scale-105 transition-all shadow-xl shadow-yellow-600/20">حفظ كافة التغييرات ✅</button>
+            </header>
+
+            <div class="flex-1 overflow-y-auto pr-2 custom-scroll space-y-6 pb-10">
+                <!-- Row 1: Security & Matches URL -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass p-6 rounded-[2rem] border-white/5 space-y-4">
+                        <h3 class="text-sm font-bold text-[#FFC107] flex items-center">
+                            <span class="ml-2">🔐</span> الأمان والوصول
+                        </h3>
+                        <div>
+                            <label class="block text-[10px] text-gray-500 mb-2 mr-2">رمز دخول الأدمن (PIN)</label>
+                            <input type="text" id="cfg-admin-pin" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-[#FFC107] text-center font-bold tracking-widest">
+                        </div>
+                    </div>
+                    <div class="glass p-6 rounded-[2rem] border-white/5 space-y-4">
+                        <h3 class="text-sm font-bold text-[#FFC107] flex items-center">
+                            <span class="ml-2">⚽</span> روابط المباريات
+                        </h3>
+                        <div>
+                            <label class="block text-[10px] text-gray-500 mb-2 mr-2">رابط مصدر المباريات التلقائي</label>
+                            <input type="text" id="cfg-matches-url" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-[#FFC107] text-xs">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Sections Configuration -->
+                <div class="glass p-8 rounded-[2.5rem] border-white/5 space-y-6 text-right">
+                    <h3 class="text-sm font-bold text-[#FFC107] flex items-center">
+                        <span class="ml-2">📂</span> إعدادات الأقسام (تفعيل/إخفاء/صيانة)
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- Live TV Config -->
+                        <div class="bg-white/5 p-4 rounded-3xl space-y-3">
+                            <p class="text-xs font-bold text-gray-300">📺 البث المباشر</p>
+                            <select id="cfg-live-status" class="w-full bg-black/40 border border-white/10 rounded-xl p-2 text-[10px] text-white outline-none">
+                                <option value="ACTIVE">فعال ✅</option>
+                                <option value="HIDDEN">مخفي 👁️‍🗨️</option>
+                                <option value="MAINTENANCE">صيانة 🛠️</option>
+                            </select>
+                            <textarea id="cfg-live-msg" placeholder="رسالة الصيانة..." class="w-full bg-black/40 border border-white/10 rounded-xl p-2 text-[9px] text-white h-20 outline-none"></textarea>
+                        </div>
+                        <!-- Movies Config -->
+                        <div class="bg-white/5 p-4 rounded-3xl space-y-3">
+                            <p class="text-xs font-bold text-gray-300">🎬 الأفلام</p>
+                            <select id="cfg-movies-status" class="w-full bg-black/40 border border-white/10 rounded-xl p-2 text-[10px] text-white outline-none">
+                                <option value="ACTIVE">فعال ✅</option>
+                                <option value="HIDDEN">مخفي 👁️‍🗨️</option>
+                                <option value="MAINTENANCE">صيانة 🛠️</option>
+                            </select>
+                            <textarea id="cfg-movies-msg" placeholder="رسالة الصيانة..." class="w-full bg-black/40 border border-white/10 rounded-xl p-2 text-[9px] text-white h-20 outline-none"></textarea>
+                        </div>
+                        <!-- Series Config -->
+                        <div class="bg-white/5 p-4 rounded-3xl space-y-3">
+                            <p class="text-xs font-bold text-gray-300">🍿 المسلسلات</p>
+                            <select id="cfg-series-status" class="w-full bg-black/40 border border-white/10 rounded-xl p-2 text-[10px] text-white outline-none">
+                                <option value="ACTIVE">فعال ✅</option>
+                                <option value="HIDDEN">مخفي 👁️‍🗨️</option>
+                                <option value="MAINTENANCE">صيانة 🛠️</option>
+                            </select>
+                            <textarea id="cfg-series-msg" placeholder="رسالة الصيانة..." class="w-full bg-black/40 border border-white/10 rounded-xl p-2 text-[9px] text-white h-20 outline-none"></textarea>
+                        </div>
+                        <!-- Matches Config -->
+                        <div class="bg-white/5 p-4 rounded-3xl space-y-3">
+                            <p class="text-xs font-bold text-gray-300">⚽ المباريات</p>
+                            <select id="cfg-matches-status" class="w-full bg-black/40 border border-white/10 rounded-xl p-2 text-[10px] text-white outline-none">
+                                <option value="ACTIVE">فعال ✅</option>
+                                <option value="HIDDEN">مخفي 👁️‍🗨️</option>
+                                <option value="MAINTENANCE">صيانة 🛠️</option>
+                            </select>
+                            <textarea id="cfg-matches-msg" placeholder="رسالة الصيانة..." class="w-full bg-black/40 border border-white/10 rounded-xl p-2 text-[9px] text-white h-20 outline-none"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Update System -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- User App Update -->
+                    <div class="glass p-8 rounded-[2.5rem] border-white/5 space-y-6">
+                        <h3 class="text-sm font-bold text-[#FFC107] flex items-center">
+                            <span class="ml-2">📱</span> تحديث تطبيق المستخدمين
+                        </h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[9px] text-gray-500 mb-1 mr-1">الإصدار (Code)</label>
+                                <input type="number" id="cfg-user-vcode" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[9px] text-gray-500 mb-1 mr-1">الاسم (Name)</label>
+                                <input type="text" id="cfg-user-vname" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[9px] text-gray-500 mb-1 mr-1">رابط التحميل</label>
+                            <input type="text" id="cfg-user-url" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white outline-none text-xs">
+                        </div>
+                        <div class="flex items-center space-x-2 space-x-reverse">
+                            <input type="checkbox" id="cfg-user-force" class="w-5 h-5 accent-[#FFC107]">
+                            <label for="cfg-user-force" class="text-xs text-gray-300">إجبار المستخدمين على التحديث 🛑</label>
+                        </div>
+                        <div>
+                            <label class="block text-[9px] text-gray-500 mb-1 mr-1">سجل التغييرات (Changelog)</label>
+                            <textarea id="cfg-user-changelog" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white h-24 outline-none text-xs"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Admin App Update -->
+                    <div class="glass p-8 rounded-[2.5rem] border-white/5 space-y-6">
+                        <h3 class="text-sm font-bold text-purple-400 flex items-center">
+                            <span class="ml-2">🛠️</span> تحديث تطبيق الأدمن
+                        </h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[9px] text-gray-500 mb-1 mr-1">الإصدار (Code)</label>
+                                <input type="number" id="cfg-admin-vcode" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[9px] text-gray-500 mb-1 mr-1">الاسم (Name)</label>
+                                <input type="text" id="cfg-admin-vname" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[9px] text-gray-500 mb-1 mr-1">رابط التحميل</label>
+                            <input type="text" id="cfg-admin-url" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white outline-none text-xs">
+                        </div>
+                        <div class="flex items-center space-x-2 space-x-reverse">
+                            <input type="checkbox" id="cfg-admin-force" class="w-5 h-5 accent-purple-500">
+                            <label for="cfg-admin-force" class="text-xs text-gray-300">إجبار الأدمن على التحديث 🛑</label>
+                        </div>
+                        <div>
+                            <label class="block text-[9px] text-gray-500 mb-1 mr-1">سجل التغييرات (Changelog)</label>
+                            <textarea id="cfg-admin-changelog" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white h-24 outline-none text-xs"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: UPDATES -->
+        <section id="section-updates" class="hidden flex-1 flex flex-col h-full min-h-0 overflow-hidden space-y-6">
+            <header class="flex justify-between items-center flex-none">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">نظام التحديثات الذكية 🚀</h2>
+                    <p class="text-gray-400 text-xs mt-1">إدارة إصدارات التطبيقات وإرسال التنبيهات</p>
+                </div>
+                <button id="btn-save-updates" class="bg-[#FFC107] text-black font-black px-8 py-3 rounded-2xl text-xs hover:scale-105 transition-all shadow-xl shadow-yellow-600/20">نشر التحديثات الآن ✅</button>
+            </header>
+
+            <div class="flex-1 overflow-y-auto pr-2 custom-scroll space-y-8 pb-10">
+                <!-- User App Update Card -->
+                <div class="glass p-8 rounded-[3rem] border-white/5 space-y-6 relative overflow-hidden group">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#FFC107] to-transparent opacity-30"></div>
+                    <h3 class="text-lg font-black text-[#FFC107] flex items-center">
+                        <span class="ml-3">📱</span> تطبيق المستخدم (User App)
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="space-y-2">
+                            <label class="block text-[10px] text-gray-500 mr-2">رقم الإصدار (Version Code)</label>
+                            <input type="number" id="upd-user-code" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-[#FFC107] font-bold">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block text-[10px] text-gray-500 mr-2">اسم الإصدار (Version Name)</label>
+                            <input type="text" id="upd-user-name" placeholder="e.g. 2.0.1" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-[#FFC107]">
+                        </div>
+                        <div class="flex items-center space-x-3 space-x-reverse pt-6">
+                            <input type="checkbox" id="upd-user-force" class="w-6 h-6 accent-[#FFC107]">
+                            <label for="upd-user-force" class="text-sm text-red-400 font-bold">إجبار المستخدمين على التحديث 🛑</label>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-[10px] text-gray-500 mr-2">رفع ملف APK جديد</label>
+                        <input type="file" id="upd-user-apk-file" accept=".apk" class="w-full bg-black/40 border border-white/10 rounded-2xl p-3 text-white text-xs file:bg-[#FFC107] file:text-black file:border-none file:rounded-xl file:px-4 file:py-2 file:font-bold cursor-pointer hover:bg-white/5 transition-all">
+                        <div id="upd-user-progress-container" class="hidden space-y-1">
+                            <div class="flex justify-between text-[8px] font-bold text-[#FFC107]"><span>جاري الرفع...</span><span id="upd-user-progress-percent">0%</span></div>
+                            <div class="w-full bg-white/5 h-1 rounded-full overflow-hidden"><div id="upd-user-progress-bar" class="bg-[#FFC107] h-full transition-all" style="width: 0%"></div></div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-[10px] text-gray-500 mr-2">رابط تحميل APK المباشر</label>
+                        <input type="text" id="upd-user-url" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-[#FFC107] text-xs font-mono">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-[10px] text-gray-500 mr-2">ما الجديد؟ (Changelog)</label>
+                        <textarea id="upd-user-logs" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-[#FFC107] min-h-[120px] text-sm" placeholder="اكتب التغييرات هنا..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Admin App Update Card -->
+                <div class="glass p-8 rounded-[3rem] border-white/5 space-y-6 relative overflow-hidden group">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30"></div>
+                    <h3 class="text-lg font-black text-purple-400 flex items-center">
+                        <span class="ml-3">🛠️</span> تطبيق الإدارة (Admin App)
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="space-y-2">
+                            <label class="block text-[10px] text-gray-500 mr-2">رقم الإصدار (Version Code)</label>
+                            <input type="number" id="upd-admin-code" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-purple-400 font-bold">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block text-[10px] text-gray-500 mr-2">اسم الإصدار (Version Name)</label>
+                            <input type="text" id="upd-admin-name" placeholder="e.g. 1.5.0" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-purple-400">
+                        </div>
+                        <div class="flex items-center space-x-3 space-x-reverse pt-6">
+                            <input type="checkbox" id="upd-admin-force" class="w-6 h-6 accent-purple-500">
+                            <label for="upd-admin-force" class="text-sm text-red-400 font-bold">إجبار الأدمن على التحديث 🛑</label>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-[10px] text-gray-500 mr-2">رفع ملف APK جديد</label>
+                        <input type="file" id="upd-admin-apk-file" accept=".apk" class="w-full bg-black/40 border border-white/10 rounded-2xl p-3 text-white text-xs file:bg-purple-600 file:text-white file:border-none file:rounded-xl file:px-4 file:py-2 file:font-bold cursor-pointer hover:bg-white/5 transition-all">
+                        <div id="upd-admin-progress-container" class="hidden space-y-1">
+                            <div class="flex justify-between text-[8px] font-bold text-purple-400"><span>جاري الرفع...</span><span id="upd-admin-progress-percent">0%</span></div>
+                            <div class="w-full bg-white/5 h-1 rounded-full overflow-hidden"><div id="upd-admin-progress-bar" class="bg-purple-600 h-full transition-all" style="width: 0%"></div></div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-[10px] text-gray-500 mr-2">رابط تحميل APK المباشر</label>
+                        <input type="text" id="upd-admin-url" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-purple-400 text-xs font-mono">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-[10px] text-gray-500 mr-2">ما الجديد؟ (Changelog)</label>
+                        <textarea id="upd-admin-logs" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-purple-400 min-h-[120px] text-sm" placeholder="اكتب التغييرات هنا..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Global Notifications (Push Broadcast) -->
+                <div class="glass p-8 rounded-[3rem] border-white/5 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-black text-blue-400 flex items-center">
+                            <span class="ml-3">🔔</span> إشعار عام منبثق (Push Broadcast)
+                        </h3>
+                        <button id="btn-send-push" class="bg-blue-600 text-white font-bold px-6 py-2 rounded-xl text-xs hover:scale-105 transition-all shadow-lg shadow-blue-600/20">إرسال الآن 🚀</button>
+                    </div>
+                    <p class="text-[10px] text-gray-500">سيصل هذا الإشعار كرسالة منبثقة (Push Notification) لهواتف جميع المستخدمين فوراً.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label class="block text-[10px] text-gray-500 mr-2">عنوان الإشعار</label>
+                            <input type="text" id="push-title" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-blue-400 text-sm" placeholder="مثلاً: تحديث جديد متوفر!">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block text-[10px] text-gray-500 mr-2">مفتاح الخادم (FCM Server Key)</label>
+                            <input type="password" id="push-server-key" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-blue-400 text-[10px] font-mono" placeholder="ادخل مفتاح FCM الخاص بمشروعك">
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-[10px] text-gray-500 mr-2">نص الرسالة</label>
+                        <textarea id="push-message" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-blue-400 min-h-[80px] text-sm" placeholder="اكتب نص الإشعار هنا..."></textarea>
+                    </div>
+
+                    <div class="w-full h-[1px] bg-white/5 my-4"></div>
+
+                    <h3 class="text-xs font-bold text-gray-400 flex items-center">
+                        <span class="ml-2">📝</span> تنبيه داخلي (In-App Notice)
+                    </h3>
+                    <p class="text-[9px] text-gray-500">هذا النص يظهر فقط داخل شريط التنبيهات في واجهة التطبيق الرئيسية.</p>
+                    <textarea id="cfg-global-notice" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-white/20 min-h-[60px] text-xs" placeholder="رسالة التنبيه الداخلي..."></textarea>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: LIVE TV -->
+        <section id="section-live" class="hidden flex-1 flex flex-col h-full min-h-0 overflow-hidden">
+            <!-- 📍 Fixed Top Header Container -->
+            <div class="flex-none sticky top-0 z-[100] bg-[#0F0F1A] pb-2 pt-1 border-b border-gray-800/50 backdrop-blur-md space-y-2">
+                <!-- 🔧 Wrench Action Bar -->
+                <div id="wrench-action-bar" class="flex items-center justify-between glass p-3 rounded-3xl border-[#FFC107]/20 hidden">
+                    <div class="flex items-center space-x-3 space-x-reverse">
+                        <button id="btn-exit-selection" class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center hover:bg-red-600/20 text-red-500 transition-all text-xl">✕</button>
+                        <span id="selected-count" class="text-sm font-bold text-[#FFC107] mr-2">0 محدد</span>
+                    </div>
+
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <button id="btn-select-all" class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-bold hover:bg-white/10 transition-all">تحديد الكل</button>
+                        <div class="w-[1px] h-8 bg-white/10 mx-2"></div>
+                        <button id="btn-bulk-move" class="flex items-center px-5 py-3 rounded-2xl bg-blue-600/20 text-blue-400 text-sm font-bold hover:bg-blue-600 hover:text-white transition-all">
+                            <span class="ml-2">🚀</span> نقل
+                        </button>
+                        <button id="btn-bulk-merge" class="flex items-center px-5 py-3 rounded-2xl bg-purple-600/20 text-purple-400 text-sm font-bold hover:bg-purple-600 hover:text-white transition-all">
+                            <span class="ml-2">🧬</span> دمج
+                        </button>
+                        <button id="btn-bulk-delete" class="flex items-center px-5 py-3 rounded-2xl bg-red-600/20 text-red-500 text-sm font-bold hover:bg-red-600 hover:text-white transition-all">
+                            <span class="ml-2">🗑️</span> حذف
+                        </button>
+                    </div>
+                </div>
+
+                <header id="live-header" class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl md:text-2xl font-bold">إدارة البث المباشر</h2>
+                        <p class="text-gray-400 text-xs mt-0.5">إضافة وتعديل الشبكات والقنوات</p>
+                    </div>
+                    <div class="flex space-x-4 space-x-reverse">
+                        <button id="btn-live-management-trigger" class="w-10 h-10 border-2 border-[#FFC107]/50 rounded-xl flex items-center justify-center text-xl hover:bg-[#FFC107] hover:text-black hover:border-[#FFC107] shadow-lg shadow-yellow-600/10 transition-all group" title="إدارة المحتوى">
+                            <span class="group-hover:scale-125 transition-transform">⚡</span>
+                        </button>
+                        <button id="btn-toggle-wrench" class="w-10 h-10 glass rounded-xl flex items-center justify-center text-base hover:bg-white/10 transition-all" title="أدوات الترتيب">🔧</button>
+                        <button id="btn-add-network" class="bg-[#FFC107] text-black font-bold px-4 py-2 rounded-xl text-xs hover:scale-105 transition-all shadow-lg shadow-yellow-600/20">+ شبكة جديدة</button>
+                    </div>
+                </header>
+            </div>
+
+            <!-- 📜 Scrollable Network List Container -->
+            <div id="networks-accordion" class="flex-1 overflow-y-auto pr-2 pt-4 space-y-4 custom-scroll">
+                <p class="text-gray-500 animate-pulse text-center py-20">جاري تحميل البيانات...</p>
+            </div>
+        </section>
+
+        <!-- 📝 Log Terminal -->
+        <div id="log-container" class="flex-none mt-2 glass px-4 py-2 rounded-xl text-[9px] space-y-0.5 max-h-16 overflow-y-auto font-mono text-gray-500">
+            <p>> مرحباً بك في لوحة تحكم Alnasrawy.</p>
+        </div>
+    </main>
+
+    <!-- 📦 MODALS (Popups) -->
+    <!-- Custom Dialog Modal (Replaces alert/confirm) -->
+    <div id="modal-alert" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-[1000] hidden items-center justify-center p-4">
+        <div class="glass p-8 rounded-[2rem] w-full max-w-sm shadow-2xl text-center">
+            <div id="alert-icon" class="text-4xl mb-4">⚠️</div>
+            <h3 id="alert-title" class="text-xl font-bold text-white mb-2">تنبيه</h3>
+            <p id="alert-msg" class="text-gray-400 text-sm mb-8"></p>
+            <div id="alert-actions" class="flex space-x-3 space-x-reverse">
+                <button id="btn-alert-ok" class="flex-1 bg-[#FFC107] text-black font-bold py-3 rounded-xl">موافق</button>
+                <button id="btn-alert-cancel" class="flex-1 bg-white/5 text-gray-400 py-3 rounded-xl hidden">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Network Selector Modal (For Move/Transfer) -->
+    <div id="modal-net-selector" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-[1100] hidden items-center justify-center p-4">
+        <div class="glass p-10 rounded-[4rem] w-full max-w-xl shadow-2xl flex flex-col max-h-[85vh] border border-[#FFC107]/20">
+            <h3 class="text-2xl font-black text-[#FFC107] mb-8 text-center italic">تحديد وجهة الاستيراد 🎯</h3>
+            <div id="net-selector-list" class="flex-1 overflow-y-auto space-y-4 custom-scroll pr-2">
+                <!-- Selectable network cards -->
+            </div>
+            <button onclick="closeModal('modal-net-selector')" class="w-full mt-8 bg-white/5 py-5 rounded-3xl text-sm font-bold text-gray-500 hover:text-white transition-all">إلغاء العملية</button>
+        </div>
+    </div>
+
+    <!-- Merge Configuration Modal (Unified for Channels & Networks) -->
+    <div id="modal-merge-config" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[850] hidden items-center justify-center p-4">
+        <div class="glass p-10 rounded-[3.5rem] w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh] text-right overflow-hidden">
+            <h3 id="merge-modal-title" class="text-2xl font-black text-[#FFC107] mb-8 italic underline text-center">إعدادات الدمج الملكي 🧬</h3>
+
+            <div class="flex-1 overflow-y-auto space-y-8 pr-2 custom-scroll">
+                <p id="merge-modal-desc" class="text-xs text-gray-400 text-center">سيتم دمج العناصر المختارة في عنصر واحد جديد</p>
+
+                <!-- Final Name -->
+                <div>
+                    <label class="block text-xs text-gray-500 mb-2 mr-2">الاسم النهائي</label>
+                    <input type="text" id="merge-final-name" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white focus:border-[#FFC107] outline-none">
+                </div>
+
+                <!-- Logo Picker / Input -->
+                <div id="merge-logo-section">
+                    <label class="block text-xs text-gray-500 mb-3 mr-2">رابط الشعار أو اختر من المتاح</label>
+                    <input type="text" id="merge-final-logo" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white focus:border-[#FFC107] outline-none mb-4 text-[10px]">
+                    <div id="merge-logo-picker" class="flex space-x-4 space-x-reverse overflow-x-auto pb-4 custom-scroll">
+                        <!-- Logos -->
+                    </div>
+                </div>
+
+                <!-- Sources Preview -->
+                <div id="merge-sources-section">
+                    <label class="block text-xs text-gray-500 mb-3 mr-2">المحتويات المدمجة (سيرفرات/قنوات)</label>
+                    <div id="merge-sources-preview" class="space-y-2">
+                        <!-- Source list -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex space-x-4 space-x-reverse mt-10">
+                <button id="btn-execute-merge" class="flex-1 bg-[#FFC107] text-black font-black py-5 rounded-2xl shadow-xl shadow-yellow-600/10 transition-all hover:scale-105">تأكيد الدمج النهائي</button>
+                <button onclick="closeModal('modal-merge-config')" class="flex-1 bg-white/5 py-5 rounded-2xl text-gray-400">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Network Modal -->
+    <div id="modal-network" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-[600] hidden items-center justify-center p-4">
+        <div class="glass p-8 rounded-[2rem] w-full max-w-md shadow-2xl">
+            <h3 id="net-modal-title" class="text-xl font-bold text-[#FFC107] mb-6">إدارة الشبكة الملكية 📺</h3>
+            <div class="space-y-4">
+                <input type="text" id="net-name" placeholder="اسم الشبكة" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white focus:border-[#FFC107] outline-none">
+                <input type="number" id="net-order" placeholder="الترتيب (مثلاً 1)" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white focus:border-[#FFC107] outline-none">
+                <div class="flex space-x-4 space-x-reverse pt-4">
+                    <button id="btn-net-save" class="flex-1 bg-[#FFC107] text-black font-bold py-4 rounded-xl">حفظ</button>
+                    <button onclick="closeModal('modal-network')" class="flex-1 bg-white/5 py-4 rounded-xl">إلغاء</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Channel Modal -->
+    <div id="modal-edit-channel" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[700] hidden items-center justify-center p-4">
+        <div class="glass p-8 rounded-[2.5rem] w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]">
+            <h3 id="ch-modal-title" class="text-xl font-bold text-[#FFC107] mb-6 text-right italic">تحرير القناة 📺</h3>
+
+            <div class="flex-1 overflow-y-auto space-y-6 pr-2 custom-scroll text-right">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] text-gray-500 mb-1 mr-2">اسم القناة</label>
+                        <input type="text" id="ch-name" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white focus:border-[#FFC107] outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-gray-500 mb-1 mr-2">الترتيب</label>
+                        <input type="number" id="ch-order" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white focus:border-[#FFC107] outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] text-gray-500 mb-1 mr-2">رابط اللوجو</label>
+                    <input type="text" id="ch-logo" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white focus:border-[#FFC107] outline-none text-[10px]">
+                </div>
+
+                <div class="pt-4 border-t border-white/5">
+                    <div class="flex justify-between items-center mb-4">
+                        <button id="btn-add-source" class="text-[#FFC107] text-[10px] border border-[#FFC107]/30 px-3 py-1.5 rounded-lg hover:bg-[#FFC107]/10">+ إضافة سيرفر</button>
+                        <label class="text-xs text-gray-400">سيرفرات البث</label>
+                    </div>
+                    <div id="sources-container" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <div class="flex space-x-4 space-x-reverse pt-8 border-t border-white/5">
+                <button id="btn-ch-save" class="flex-1 bg-[#FFC107] text-black font-bold py-4 rounded-3xl shadow-xl shadow-yellow-600/10">حفظ القناة ✅</button>
+                <button onclick="closeModal('modal-edit-channel')" class="flex-1 bg-white/5 py-4 rounded-3xl text-gray-400">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Movie Modal -->
+    <div id="modal-movie" class="fixed inset-0 bg-black/95 z-[800] hidden items-center justify-center p-4">
+        <div class="glass p-6 md:p-8 rounded-[2.5rem] w-full max-w-4xl shadow-2xl flex flex-col max-h-[90vh]">
+            <h3 id="movie-modal-title" class="text-2xl font-bold text-[#FFC107] mb-6 text-right">إضافة فيلم جديد 🎬</h3>
+
+            <div class="flex-1 overflow-y-auto pr-2 custom-scroll space-y-6">
+                <!-- Row 1: Title & Category -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-1 text-right">
+                        <label class="text-[10px] text-gray-500 mr-2">اسم الفيلم</label>
+                        <input type="text" id="movie-title" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-[#FFC107]">
+                    </div>
+                    <div class="space-y-1 text-right">
+                        <label class="text-[10px] text-gray-500 mr-2">التصنيف</label>
+                        <select id="movie-category-id" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-[#FFC107] appearance-none">
+                            <option value="">اختر التصنيف</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Row 2: Images -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-1 text-right">
+                        <label class="text-[10px] text-gray-500 mr-2">رابط البوستر (URL)</label>
+                        <input type="text" id="movie-logo" class="w-full bg-black/40 border border-white/10 rounded-2xl p-3 text-[10px] text-white outline-none">
+                    </div>
+                    <div class="space-y-1 text-right">
+                        <label class="text-[10px] text-gray-500 mr-2">رابط الخلفية (URL)</label>
+                        <input type="text" id="movie-backdrop" class="w-full bg-black/40 border border-white/10 rounded-2xl p-3 text-[10px] text-white outline-none">
+                    </div>
+                </div>
+
+                <!-- Row 3: Year & Rating -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="space-y-1 text-right">
+                        <label class="text-[10px] text-gray-500 mr-2">السنة</label>
+                        <input type="text" id="movie-year" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white outline-none">
+                    </div>
+                    <div class="space-y-1 text-right">
+                        <label class="text-[10px] text-gray-500 mr-2">التقييم (e.g. 8.5)</label>
+                        <input type="text" id="movie-rating" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white outline-none">
+                    </div>
+                    <div class="space-y-1 text-right">
+                        <label class="text-[10px] text-gray-500 mr-2">النوع (Genre)</label>
+                        <input type="text" id="movie-genre" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white outline-none" placeholder="Action, Drama...">
+                    </div>
+                </div>
+
+                <!-- Row 4: Description -->
+                <div class="space-y-1 text-right">
+                    <label class="text-[10px] text-gray-500 mr-2">قصة الفيلم</label>
+                    <textarea id="movie-desc" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white outline-none min-h-[100px] text-sm"></textarea>
+                </div>
+
+                <!-- Row 5: Servers -->
+                <div class="pt-4 border-t border-white/5">
+                    <div class="flex justify-between items-center mb-4">
+                        <button id="btn-add-movie-source" class="text-[#FFC107] text-[10px] border border-[#FFC107]/30 px-3 py-1.5 rounded-lg hover:bg-[#FFC107]/10">+ إضافة سيرفر</button>
+                        <label class="text-xs text-gray-400">سيرفرات المشاهدة</label>
+                    </div>
+                    <div id="movie-sources-container" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <div class="flex space-x-4 space-x-reverse pt-8">
+                <button id="btn-movie-save" class="flex-1 bg-[#FFC107] text-black font-bold py-5 rounded-3xl shadow-xl shadow-yellow-600/10">حفظ الفيلم</button>
+                <button onclick="closeModal('modal-movie')" class="flex-1 bg-white/5 py-5 rounded-3xl text-gray-400">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Series Management Modal -->
+    <div id="modal-series-manager" class="fixed inset-0 bg-black/95 z-[800] hidden items-center justify-center p-4">
+        <div class="glass p-6 md:p-8 rounded-[2.5rem] w-full max-w-5xl shadow-2xl flex flex-col max-h-[90vh]">
+            <h3 id="series-modal-title" class="text-2xl font-bold text-[#FFC107] mb-6 text-right italic">إدارة المسلسل 🍿</h3>
+
+            <!-- Tabs Header -->
+            <div class="flex space-x-4 space-x-reverse mb-6 border-b border-white/10">
+                <button onclick="switchSeriesTab('meta')" id="tab-series-meta" class="pb-3 px-4 text-sm font-bold border-b-2 border-[#FFC107] text-[#FFC107]">البيانات الأساسية</button>
+                <button onclick="switchSeriesTab('seasons')" id="tab-series-seasons" class="pb-3 px-4 text-sm font-bold text-gray-500 border-b-2 border-transparent">المواسم والحلقات</button>
+            </div>
+
+            <div id="series-tab-content" class="flex-1 overflow-y-auto pr-2 custom-scroll">
+                <!-- TAB 1: Meta -->
+                <div id="series-pane-meta" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-1 text-right">
+                            <label class="text-[10px] text-gray-500 mr-2">عنوان المسلسل</label>
+                            <input type="text" id="series-title" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-[#FFC107]">
+                        </div>
+                        <div class="space-y-1 text-right">
+                            <label class="text-[10px] text-gray-500 mr-2">التصنيف</label>
+                            <select id="series-category-id" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-[#FFC107] appearance-none">
+                                <option value="">اختر التصنيف</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="series-logo" placeholder="رابط البوستر" class="w-full bg-black/40 border border-white/10 rounded-2xl p-3 text-xs text-white">
+                        <input type="text" id="series-backdrop" placeholder="رابط الخلفية" class="w-full bg-black/40 border border-white/10 rounded-2xl p-3 text-xs text-white">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <input type="text" id="series-year" placeholder="السنة" class="bg-black/40 border border-white/10 rounded-2xl p-4 text-white">
+                        <input type="text" id="series-rating" placeholder="التقييم" class="bg-black/40 border border-white/10 rounded-2xl p-4 text-white">
+                        <input type="text" id="series-genre" placeholder="النوع" class="bg-black/40 border border-white/10 rounded-2xl p-4 text-white">
+                    </div>
+                    <textarea id="series-desc" placeholder="قصة المسلسل" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white min-h-[120px] text-sm"></textarea>
+                </div>
+
+                <!-- TAB 2: Seasons -->
+                <div id="series-pane-seasons" class="hidden h-full flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 md:space-x-reverse min-h-0">
+                    <!-- Seasons List -->
+                    <div class="w-full md:w-48 flex flex-col space-y-2 border-l border-white/5 pl-2">
+                        <button id="btn-add-season" class="w-full py-2 bg-[#FFC107]/10 text-[#FFC107] rounded-xl text-xs font-bold">+ موسم جديد</button>
+                        <div id="series-seasons-list" class="flex-1 overflow-y-auto space-y-2 custom-scroll">
+                            <!-- Season Items -->
+                        </div>
+                    </div>
+                    <!-- Episodes List -->
+                    <div class="flex-1 flex flex-col space-y-4 min-h-0">
+                        <div class="flex justify-between items-center">
+                            <button id="btn-add-episode" class="bg-[#FFC107] text-black font-bold px-4 py-2 rounded-xl text-[10px] hidden">إضافة حلقة +</button>
+                            <h4 id="active-season-title" class="text-sm font-bold text-gray-400">اختر موسماً للعرض</h4>
+                        </div>
+                        <div id="series-episodes-list" class="flex-1 overflow-y-auto space-y-2 custom-scroll">
+                            <!-- Episode Items -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex space-x-4 space-x-reverse pt-8 border-t border-white/5">
+                <button id="btn-series-save" class="flex-1 bg-[#FFC107] text-black font-black py-4 rounded-3xl shadow-xl shadow-yellow-600/10">حفظ المسلسل بالكامل ✅</button>
+                <button onclick="closeModal('modal-series-manager')" class="flex-1 bg-white/5 py-4 rounded-3xl text-gray-400">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Episode Editor Modal -->
+    <div id="modal-episode-editor" class="fixed inset-0 bg-black/95 z-[900] hidden items-center justify-center p-4">
+        <div class="glass p-8 rounded-[2.5rem] w-full max-w-2xl shadow-2xl">
+            <h3 class="text-xl font-bold text-[#FFC107] mb-6 text-right">تحرير الحلقة 🎬</h3>
+            <div class="space-y-4 text-right">
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="ep-title" placeholder="عنوان الحلقة" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white outline-none focus:border-[#FFC107]">
+                    <input type="number" id="ep-order" placeholder="رقم الحلقة" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white outline-none focus:border-[#FFC107]">
+                </div>
+                <div class="pt-4 border-t border-white/5">
+                    <div class="flex justify-between items-center mb-4">
+                        <button id="btn-add-ep-source" class="text-[#FFC107] text-[10px] border border-[#FFC107]/30 px-3 py-1.5 rounded-lg">+ إضافة سيرفر</button>
+                        <label class="text-xs text-gray-400">سيرفرات المشاهدة</label>
+                    </div>
+                    <div id="ep-sources-container" class="space-y-2 max-h-48 overflow-y-auto custom-scroll"></div>
+                </div>
+                <div class="flex space-x-4 space-x-reverse pt-6">
+                    <button id="btn-ep-save" class="flex-1 bg-[#FFC107] text-black font-bold py-4 rounded-2xl">حفظ بيانات الحلقة</button>
+                    <button onclick="closeModal('modal-episode-editor')" class="flex-1 bg-white/5 py-4 rounded-2xl text-gray-400">إلغاء</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Series Category Modal -->
+    <div id="modal-series-category" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-[900] hidden items-center justify-center p-4">
+        <div class="glass p-8 rounded-[2rem] w-full max-w-md shadow-2xl">
+            <h3 id="series-cat-modal-title" class="text-xl font-bold text-[#FFC107] mb-6 text-right">إدارة تصنيفات المسلسلات</h3>
+            <div class="space-y-4 text-right">
+                <input type="text" id="series-cat-name" placeholder="اسم التصنيف" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white outline-none">
+                <input type="number" id="series-cat-order" placeholder="الترتيب" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white outline-none">
+                <div class="flex space-x-4 space-x-reverse pt-4">
+                    <button id="btn-series-cat-save" class="flex-1 bg-[#FFC107] text-black font-bold py-4 rounded-xl">حفظ</button>
+                    <button onclick="closeModal('modal-series-category')" class="flex-1 bg-white/5 py-4 rounded-xl">إلغاء</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Xtream Series Import Wizard -->
+    <div id="modal-series-xtream-import" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-[1000] hidden items-center justify-center p-4">
+        <div class="glass p-8 rounded-[3.5rem] w-full max-w-4xl shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-6">
+                <button onclick="closeModal('modal-series-xtream-import')" class="text-gray-500 hover:text-white">✕</button>
+                <h3 class="text-2xl font-black text-[#FFC107] italic">استيراد مسلسلات من Xtream 🍿</h3>
+            </div>
+            <div class="flex-1 flex flex-col space-y-6 overflow-hidden">
+                <div class="flex justify-between items-center">
+                    <button id="btn-select-all-series-xt-cats" class="text-[10px] text-[#FFC107] bg-[#FFC107]/10 px-3 py-1.5 rounded-xl hover:bg-[#FFC107] hover:text-black transition-all font-bold">تحديد الكل ⚡</button>
+                    <label class="block text-[10px] text-gray-500">اختر التصنيفات المراد استيرادها</label>
+                </div>
+                <div id="series-xtream-cats" class="grid grid-cols-2 md:grid-cols-3 gap-3 overflow-y-auto max-h-[50vh] p-2 custom-scroll border border-white/5 rounded-2xl bg-black/20">
+                    <p class="col-span-full text-center py-10 opacity-30 italic text-xs">جاري جلب تصنيفات المسلسلات...</p>
+                </div>
+                <div class="mt-8 flex items-center space-x-6 space-x-reverse">
+                    <button id="btn-start-series-import" class="flex-1 bg-[#FFC107] text-black font-black py-5 rounded-3xl shadow-xl shadow-yellow-500/20 text-lg">بدء استيراد المسلسلات ⚡</button>
+                    <div id="series-import-progress-container" class="hidden flex-1">
+                        <div class="flex justify-between mb-2 text-[10px] font-bold">
+                            <span id="series-import-status">جاري المعالجة...</span>
+                            <span id="series-import-percent">0%</span>
+                        </div>
+                        <div class="w-full bg-white/5 h-2 rounded-full overflow-hidden">
+                            <div id="series-import-bar" class="bg-[#FFC107] h-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Xtream Server Edit Modal -->
+    <div id="modal-xtream-server" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-[950] hidden items-center justify-center p-4">
+        <div class="glass p-8 rounded-[2.5rem] w-full max-w-md shadow-2xl">
+            <h3 id="xtream-server-title" class="text-xl font-bold text-[#FFC107] mb-6 text-right">إضافة سيرفر Xtream 🌐</h3>
+            <div class="space-y-4 text-right">
+                <div>
+                    <label class="text-[10px] text-gray-500 mr-2">اسم السيرفر (للعرض فقط)</label>
+                    <input type="text" id="xt-name" placeholder="مثلاً: سيرفر الصقر" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white focus:border-[#FFC107] outline-none">
+                </div>
+                <div>
+                    <label class="text-[10px] text-gray-500 mr-2">رابط الهوست (Base URL)</label>
+                    <input type="text" id="xt-url" placeholder="http://domain.com:8080" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white focus:border-[#FFC107] outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[10px] text-gray-500 mr-2">اسم المستخدم</label>
+                        <input type="text" id="xt-user" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white focus:border-[#FFC107] outline-none">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-500 mr-2">كلمة المرور</label>
+                        <input type="password" id="xt-pass" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white focus:border-[#FFC107] outline-none">
+                    </div>
+                </div>
+                <div class="flex space-x-4 space-x-reverse pt-4">
+                    <button id="btn-xtream-save" class="flex-1 bg-[#FFC107] text-black font-bold py-4 rounded-2xl">حفظ السيرفر</button>
+                    <button onclick="closeModal('modal-xtream-server')" class="flex-1 bg-white/5 py-4 rounded-2xl text-gray-400">إلغاء</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Xtream Import Wizard Modal -->
+    <div id="modal-xtream-import" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-[1000] hidden items-center justify-center p-4">
+        <div class="glass p-8 rounded-[3.5rem] w-full max-w-4xl shadow-2xl flex flex-col max-h-[90vh]">
+            <div id="import-wizard-step1" class="flex flex-col h-full">
+                <div class="flex justify-between items-center mb-6">
+                    <button onclick="closeModal('modal-xtream-import')" class="text-gray-500 hover:text-white">✕</button>
+                    <h3 class="text-2xl font-black text-[#FFC107] italic">استيراد الأفلام من Xtream 🚀</h3>
+                </div>
+
+                <div class="flex-1 flex flex-col space-y-6 overflow-hidden">
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <button id="btn-select-all-movie-xt-cats" class="text-[10px] text-[#FFC107] bg-[#FFC107]/10 px-3 py-1.5 rounded-xl hover:bg-[#FFC107] hover:text-black transition-all font-bold">تحديد الكل ⚡</button>
+                            <label class="block text-[10px] text-gray-500 text-right">1. اختر التصنيفات المراد استيرادها</label>
+                        </div>
+                        <div id="xtream-categories-list" class="grid grid-cols-2 md:grid-cols-3 gap-3 overflow-y-auto max-h-[40vh] p-2 custom-scroll border border-white/5 rounded-2xl bg-black/20">
+                            <!-- Categories with Checkboxes -->
+                            <p class="col-span-full text-center py-10 opacity-30 italic text-xs">جاري الاتصال بالسيرفر...</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="text-right">
+                            <label class="block text-xs text-gray-500 mb-2">2. خيارات الاستيراد</label>
+                            <div class="space-y-3">
+                                <label class="flex items-center space-x-3 space-x-reverse cursor-pointer group">
+                                    <input type="checkbox" id="check-smart-merge" checked class="w-5 h-5 accent-[#FFC107]">
+                                    <span class="text-sm text-gray-300 group-hover:text-white">تفعيل الدمج الذكي (دمج النسخ المتكررة) 🧬</span>
+                                </label>
+                                <label class="flex items-center space-x-3 space-x-reverse cursor-pointer group">
+                                    <input type="checkbox" id="check-overwrite-meta" class="w-5 h-5 accent-[#FFC107]">
+                                    <span class="text-sm text-gray-300 group-hover:text-white">تحديث البيانات الوصفية (البوستر، القصة) 🖼️</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="text-right bg-[#FFC107]/5 p-5 rounded-3xl border border-[#FFC107]/10">
+                            <p class="text-xs text-[#FFC107] mb-2 font-bold">⚠️ تنبيه هامة</p>
+                            <p class="text-[10px] text-gray-400 leading-relaxed">سيقوم النظام بسحب الأفلام من التصنيفات المحددة وتوزيعها في لوحة التحكم. إذا تم تفعيل الدمج الذكي، سيتم جمع روابط الفيلم الواحد تحت بوستر واحد وسيرفرات متعددة.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex items-center space-x-6 space-x-reverse">
+                    <button id="btn-start-import" class="flex-1 bg-[#FFC107] text-black font-black py-5 rounded-3xl shadow-xl shadow-yellow-500/20 text-lg">بدء عملية الاستيراد الآن ⚡</button>
+                    <div id="import-progress-container" class="hidden flex-1">
+                        <div class="flex justify-between mb-2 text-[10px] font-bold">
+                            <span id="import-status-text">جاري المعالجة...</span>
+                            <span id="import-percent">0%</span>
+                        </div>
+                        <div class="w-full bg-white/5 h-2 rounded-full overflow-hidden">
+                            <div id="import-progress-bar" class="bg-[#FFC107] h-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🍿 Series Content Management Modal (Android Parity) -->
+    <div id="modal-series-management" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[1000] hidden items-center justify-center p-4">
+        <div class="glass p-8 rounded-[3rem] w-full max-w-lg shadow-2xl flex flex-col text-right border border-purple-500/10">
+            <div class="w-12 h-1 bg-white/10 rounded-full mx-auto mb-6"></div>
+            <h3 class="text-2xl font-black text-[#FFC107] mb-8 text-center italic">إدارة محتوى المسلسلات 🍿</h3>
+
+            <div class="space-y-3">
+                <button id="series-opt-add-xtream" class="w-full p-5 bg-white/5 hover:bg-[#FFC107] hover:text-black rounded-2xl border border-white/5 transition-all flex items-center justify-between group">
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <span class="text-xl">➕</span>
+                        <span class="text-sm font-bold">إضافة سيرفر Xtream</span>
+                    </div>
+                    <span class="text-xs opacity-40">Xtream</span>
+                </button>
+
+                <button id="series-opt-custom-import" class="w-full p-5 bg-white/5 hover:bg-[#FFC107] hover:text-black rounded-2xl border border-white/5 transition-all flex items-center justify-between group">
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <span class="text-xl">📥</span>
+                        <span class="text-sm font-bold">استيراد مخصص من Xtream</span>
+                    </div>
+                    <span class="text-xs opacity-40">Import</span>
+                </button>
+
+                <button id="series-opt-m3u-import" class="w-full p-5 bg-white/5 hover:bg-[#FFC107] hover:text-black rounded-2xl border border-white/5 transition-all flex items-center justify-between group">
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <span class="text-xl">▶️</span>
+                        <span class="text-sm font-bold">استيراد ملف أو رابط (M3U / JSON)</span>
+                    </div>
+                    <span class="text-xs opacity-40">Files</span>
+                </button>
+
+                <button id="series-opt-manage-servers" class="w-full p-5 bg-white/5 hover:bg-[#FFC107] hover:text-black rounded-2xl border border-white/5 transition-all flex items-center justify-between group">
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <span class="text-xl">✏️</span>
+                        <span class="text-sm font-bold">إدارة وحذف السيرفرات</span>
+                    </div>
+                    <span class="text-xs opacity-40">Manage</span>
+                </button>
+
+                <button id="series-opt-clean-sort" class="w-full p-5 bg-white/5 hover:bg-[#FFC107] hover:text-black rounded-2xl border border-white/5 transition-all flex items-center justify-between group">
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <span class="text-xl">🔧</span>
+                        <span class="text-sm font-bold">تنظيف وترتيب المسلسلات</span>
+                    </div>
+                    <span class="text-xs opacity-40">Cleanup</span>
+                </button>
+            </div>
+
+            <button onclick="closeModal('modal-series-management')" class="mt-8 py-4 bg-white/5 rounded-2xl text-gray-400 font-bold hover:text-white transition-all text-sm">إغلاق القائمة</button>
+        </div>
+    </div>
+
+    <!-- 🌐 Series Server Management Modal -->
+    <div id="modal-manage-series-servers" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[1100] hidden items-center justify-center p-4">
+        <div class="glass p-8 rounded-[3rem] w-full max-w-2xl shadow-2xl flex flex-col max-h-[85vh]">
+            <h3 class="text-xl font-bold text-purple-400 mb-6 text-right italic">إدارة سيرفرات المسلسلات 🌐</h3>
+            <div id="manage-series-servers-list" class="flex-1 overflow-y-auto space-y-3 custom-scroll pr-2"></div>
+            <button onclick="closeModal('modal-manage-series-servers')" class="mt-6 py-4 bg-white/5 rounded-2xl text-gray-400 font-bold hover:text-white transition-all">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- 🧬 Series Fusion Modal (Android MergeSeries Parity) -->
+    <div id="modal-series-fusion" class="fixed inset-0 bg-black/90 backdrop-blur-xl z-[1200] hidden items-center justify-center p-4">
+        <div class="glass p-10 rounded-[3.5rem] w-full max-w-3xl shadow-2xl flex flex-col max-h-[90vh] text-right overflow-hidden border border-purple-500/20">
+            <h3 class="text-2xl font-black text-purple-400 mb-8 italic underline text-center">دمج المسلسلات الذكي 🍿🧬</h3>
+            <div class="flex-1 overflow-y-auto space-y-8 pr-2 custom-scroll">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-2 mr-2">الاسم النهائي للمسلسل</label>
+                        <input type="text" id="fusion-series-name" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white focus:border-purple-400 outline-none font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-2 mr-2">النقل إلى تصنيف</label>
+                        <select id="fusion-series-target-cat" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-purple-400 appearance-none"></select>
+                    </div>
+                </div>
+                <div id="fusion-series-logo-section">
+                    <label class="block text-xs text-gray-500 mb-3 mr-2">اختر البوستر الأساسي</label>
+                    <div id="fusion-series-logo-picker" class="flex space-x-4 space-x-reverse overflow-x-auto pb-4 custom-scroll"></div>
+                    <input type="text" id="fusion-series-final-logo" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white focus:border-purple-400 outline-none mt-2 text-[10px]">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-3 mr-2">المسلسلات المدمجة (سيتم جمع كافة المواسم والحلقات)</label>
+                    <div id="fusion-series-list" class="space-y-3"></div>
+                </div>
+            </div>
+            <div class="flex space-x-4 space-x-reverse mt-10">
+                <button id="btn-confirm-series-fusion" class="flex-1 bg-purple-600 text-white font-black py-5 rounded-2xl shadow-xl shadow-purple-600/20 transition-all hover:scale-105">تأكيد دمج كافة المواسم ⚡</button>
+                <button onclick="closeModal('modal-series-fusion')" class="flex-1 bg-white/5 py-5 rounded-2xl text-gray-400">إلغاء</button>
+            </div>
+        </div>
+    </div>
+    <!-- 🛠️ Movie Content Management Modal (Android Parity) -->
+    <div id="modal-movie-management" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[1000] hidden items-center justify-center p-4">
+        <div class="glass p-8 rounded-[3rem] w-full max-w-lg shadow-2xl flex flex-col text-right border border-[#FFC107]/10">
+            <div class="w-12 h-1 bg-white/10 rounded-full mx-auto mb-6"></div>
+            <h3 class="text-2xl font-black text-[#FFC107] mb-8 text-center italic">إدارة المحتوى (الأفلام) 🎬</h3>
+
+            <div class="space-y-3">
+                <button id="movie-opt-add-xtream" class="w-full p-5 bg-white/5 hover:bg-[#FFC107] hover:text-black rounded-2xl border border-[#FFC107]/20 transition-all flex items-center justify-between group">
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <span class="text-xl">➕</span>
+                        <span class="text-sm font-bold">إضافة سيرفر Xtream</span>
+                    </div>
+                    <span class="text-xs opacity-40">Xtream</span>
+                </button>
+
+                <button id="movie-opt-custom-import" class="w-full p-5 bg-white/5 hover:bg-[#FFC107] hover:text-black rounded-2xl border border-[#FFC107]/20 transition-all flex items-center justify-between group">
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <span class="text-xl">📥</span>
+                        <span class="text-sm font-bold">استيراد مخصص من Xtream</span>
+                    </div>
+                    <span class="text-xs opacity-40">Import</span>
+                </button>
+
+                <button id="movie-opt-m3u-import" class="w-full p-5 bg-white/5 hover:bg-[#FFC107] hover:text-black rounded-2xl border border-[#FFC107]/20 transition-all flex items-center justify-between group">
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <span class="text-xl">▶️</span>
+                        <span class="text-sm font-bold">استيراد ملف أو رابط (M3U / JSON)</span>
+                    </div>
+                    <span class="text-xs opacity-40">Files</span>
+                </button>
+
+                <button id="movie-opt-manage-servers" class="w-full p-5 bg-white/5 hover:bg-[#FFC107] hover:text-black rounded-2xl border border-[#FFC107]/20 transition-all flex items-center justify-between group">
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <span class="text-xl">✏️</span>
+                        <span class="text-sm font-bold">إدارة وحذف السيرفرات</span>
+                    </div>
+                    <span class="text-xs opacity-40">Manage</span>
+                </button>
+
+                <button id="movie-opt-clean-sort" class="w-full p-5 bg-white/5 hover:bg-[#FFC107] hover:text-black rounded-2xl border border-[#FFC107]/20 transition-all flex items-center justify-between group">
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <span class="text-xl">🔧</span>
+                        <span class="text-sm font-bold">تنظيف وترتيب القنوات</span>
+                    </div>
+                    <span class="text-xs opacity-40">Cleanup</span>
+                </button>
+            </div>
+
+            <button onclick="closeModal('modal-movie-management')" class="mt-8 py-4 bg-white/5 rounded-2xl text-gray-400 font-bold hover:text-white transition-all text-sm">إغلاق القائمة</button>
+        </div>
+    </div>
+
+    <!-- 🧬 Movie Fusion Modal (Android MergeMoviesActivity Parity) -->
+    <div id="modal-movie-fusion" class="fixed inset-0 bg-black/90 backdrop-blur-xl z-[1200] hidden items-center justify-center p-4">
+        <div class="glass p-10 rounded-[3.5rem] w-full max-w-3xl shadow-2xl flex flex-col max-h-[90vh] text-right overflow-hidden border border-purple-500/20">
+            <h3 class="text-2xl font-black text-purple-400 mb-8 italic underline text-center">محرك دمج الأفلام الذكي 🎬🧬</h3>
+
+            <div class="flex-1 overflow-y-auto space-y-8 pr-2 custom-scroll">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-2 mr-2">الاسم النهائي للفيلم</label>
+                        <input type="text" id="fusion-movie-name" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white focus:border-[#FFC107] outline-none font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-2 mr-2">النقل إلى تصنيف</label>
+                        <select id="fusion-movie-target-cat" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-[#FFC107] appearance-none"></select>
+                    </div>
+                </div>
+
+                <div id="fusion-logo-section">
+                    <label class="block text-xs text-gray-500 mb-3 mr-2">اختر البوستر الأساسي</label>
+                    <div id="fusion-logo-picker" class="flex space-x-4 space-x-reverse overflow-x-auto pb-4 custom-scroll"></div>
+                    <input type="text" id="fusion-final-logo" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white focus:border-[#FFC107] outline-none mt-2 text-[10px]" placeholder="رابط بوستر مخصص...">
+                </div>
+
+                <div>
+                    <label class="block text-xs text-gray-500 mb-3 mr-2">ترتيب سيرفرات المشاهدة (اسحب للترتيب)</label>
+                    <div id="fusion-sources-list" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <div class="flex space-x-4 space-x-reverse mt-10">
+                <button id="btn-confirm-fusion" class="flex-1 bg-purple-600 text-white font-black py-5 rounded-2xl shadow-xl shadow-purple-600/20 transition-all hover:scale-105">تأكيد عملية الدمج والنقل ⚡</button>
+                <button onclick="closeModal('modal-movie-fusion')" class="flex-1 bg-white/5 py-5 rounded-2xl text-gray-400">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- M3U / JSON Import Modal -->
+    <div id="modal-m3u-import" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-[950] hidden items-center justify-center p-4">
+        <div class="glass p-8 rounded-[2.5rem] w-full max-w-md shadow-2xl text-right">
+            <h3 class="text-xl font-bold text-[#FFC107] mb-6">📂 استيراد ملف أو رابط M3U / JSON للأفلام</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] text-gray-500 block mb-1">رابط قائمة M3U / JSON (URL)</label>
+                    <input type="text" id="m3u-url-input" placeholder="http://domain.com/playlist.m3u" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white text-xs outline-none focus:border-[#FFC107]">
+                </div>
+                <div>
+                    <label class="text-[10px] text-gray-500 block mb-1">أو ارفع ملف من جهازك</label>
+                    <input type="file" id="m3u-file-input" accept=".m3u,.m3u8,.json" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white text-xs">
+                </div>
+                <div>
+                    <label class="text-[10px] text-gray-500 block mb-1">اسم التصنيف المستهدف</label>
+                    <input type="text" id="m3u-target-category" placeholder="مثلاً: أفلام أجنبية" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white text-xs outline-none focus:border-[#FFC107]">
+                </div>
+                <div class="flex space-x-3 space-x-reverse pt-4">
+                    <button id="btn-execute-m3u-import" class="flex-1 bg-[#FFC107] text-black font-bold py-4 rounded-xl text-xs">بدء الاستيراد 🚀</button>
+                    <button onclick="closeModal('modal-m3u-import')" class="flex-1 bg-white/5 py-4 rounded-xl text-xs text-gray-400">إلغاء</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Series M3U / JSON Import Modal -->
+    <div id="modal-series-m3u-import" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-[950] hidden items-center justify-center p-4">
+        <div class="glass p-8 rounded-[2.5rem] w-full max-w-md shadow-2xl text-right">
+            <h3 class="text-xl font-bold text-purple-400 mb-6">📂 استيراد ملف أو رابط M3U / JSON للمسلسلات</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] text-gray-500 block mb-1">رابط قائمة M3U / JSON (URL)</label>
+                    <input type="text" id="series-m3u-url-input" placeholder="http://domain.com/playlist.m3u" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white text-xs outline-none focus:border-purple-400">
+                </div>
+                <div>
+                    <label class="text-[10px] text-gray-500 block mb-1">أو ارفع ملف من جهازك</label>
+                    <input type="file" id="series-m3u-file-input" accept=".m3u,.m3u8,.json" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white text-xs">
+                </div>
+                <div>
+                    <label class="text-[10px] text-gray-500 block mb-1">اسم التصنيف المستهدف</label>
+                    <input type="text" id="series-m3u-target-category" placeholder="مثلاً: مسلسلات عربية" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white text-xs outline-none focus:border-purple-400">
+                </div>
+                <div class="flex space-x-3 space-x-reverse pt-4">
+                    <button id="btn-execute-series-m3u-import" class="flex-1 bg-purple-600 text-white font-bold py-4 rounded-xl text-xs">بدء الاستيراد 🚀</button>
+                    <button onclick="closeModal('modal-series-m3u-import')" class="flex-1 bg-white/5 py-4 rounded-xl text-xs text-gray-400">إلغاء</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Xtream Channel Selector Modal -->
+    <div id="modal-xtream-channels" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-[1100] hidden items-center justify-center p-4">
+        <!-- ... existing ... -->
+    </div>
+
+    <!-- 🛠️ Unified Content Management Modal (Android BottomSheet Parity) -->
+    <div id="modal-live-management" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[1000] hidden items-center justify-center p-4">
+        <div class="glass p-8 rounded-[3rem] w-full max-w-lg shadow-2xl flex flex-col text-right">
+            <div class="w-12 h-1 bg-white/10 rounded-full mx-auto mb-6"></div> <!-- Grab handle visual -->
+            <h3 class="text-2xl font-black text-[#FFC107] mb-8 text-center italic">إدارة المحتوى 📺</h3>
+
+            <div class="space-y-3">
+                <button id="opt-add-xtream" class="w-full p-5 bg-white/5 hover:bg-[#FFC107] hover:text-black rounded-2xl border border-[#FFC107]/20 transition-all flex items-center justify-between group">
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <span class="text-xl">➕</span>
+                        <span class="text-sm font-bold">إضافة سيرفر Xtream</span>
+                    </div>
+                    <span class="text-xs opacity-40">Xtream</span>
+                </button>
+
+                <button id="opt-custom-import" class="w-full p-5 bg-white/5 hover:bg-[#FFC107] hover:text-black rounded-2xl border border-[#FFC107]/20 transition-all flex items-center justify-between group">
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <span class="text-xl">📥</span>
+                        <span class="text-sm font-bold">استيراد مخصص من Xtream</span>
+                    </div>
+                    <span class="text-xs opacity-40">Import</span>
+                </button>
+
+                <button id="opt-m3u-import" class="w-full p-5 bg-white/5 hover:bg-[#FFC107] hover:text-black rounded-2xl border border-[#FFC107]/20 transition-all flex items-center justify-between group">
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <span class="text-xl">▶️</span>
+                        <span class="text-sm font-bold">استيراد ملف أو رابط (M3U / JSON)</span>
+                    </div>
+                    <span class="text-xs opacity-40">Files</span>
+                </button>
+
+                <button id="opt-manage-servers" class="w-full p-5 bg-white/5 hover:bg-[#FFC107] hover:text-black rounded-2xl border border-[#FFC107]/20 transition-all flex items-center justify-between group">
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <span class="text-xl">✏️</span>
+                        <span class="text-sm font-bold">إدارة وحذف السيرفرات</span>
+                    </div>
+                    <span class="text-xs opacity-40">Manage</span>
+                </button>
+
+                <button id="opt-clean-sort" class="w-full p-5 bg-white/5 hover:bg-[#FFC107] hover:text-black rounded-2xl border border-[#FFC107]/20 transition-all flex items-center justify-between group">
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <span class="text-xl">🔧</span>
+                        <span class="text-sm font-bold">تنظيف وترتيب القنوات</span>
+                    </div>
+                    <span class="text-xs opacity-40">Cleanup</span>
+                </button>
+            </div>
+
+            <button onclick="closeModal('modal-live-management')" class="mt-8 py-4 bg-white/5 rounded-2xl text-gray-400 font-bold hover:text-white transition-all text-sm">إغلاق القائمة</button>
+        </div>
+    </div>
+
+    <!-- 🌐 Movie Server Management Modal -->
+    <div id="modal-manage-movie-servers" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[1100] hidden items-center justify-center p-4">
+        <div class="glass p-8 rounded-[3rem] w-full max-w-2xl shadow-2xl flex flex-col max-h-[85vh]">
+            <h3 class="text-xl font-bold text-[#FFC107] mb-6 text-right italic">إدارة سيرفرات الأفلام 🌐</h3>
+            <div id="manage-movie-servers-list" class="flex-1 overflow-y-auto space-y-3 custom-scroll pr-2">
+                <!-- Movie Servers will be listed here -->
+            </div>
+            <button onclick="closeModal('modal-manage-movie-servers')" class="mt-6 py-4 bg-white/5 rounded-2xl text-gray-400 font-bold hover:text-white transition-all">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- 🛠️ Smart Link Cleanup Modal (Web Version) -->
+    <div id="modal-clean-sort" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[1100] hidden items-center justify-center p-4">
+        <div class="glass p-10 rounded-[3.5rem] w-full max-w-3xl shadow-2xl flex flex-col max-h-[90vh]">
+            <h3 class="text-2xl font-black text-[#FFC107] mb-4 text-center italic">محرك التنظيف والدمج الذكي 🧬</h3>
+            <p class="text-gray-500 text-xs text-center mb-8">سيقوم المحرك بدمج القنوات المكررة تلقائياً بناءً على تشابه الأسماء</p>
+
+            <div id="cleanup-preview-list" class="flex-1 overflow-y-auto space-y-4 custom-scroll pr-2 mb-8">
+                <!-- Cleanup previews -->
+                <p class="text-center py-20 text-gray-600">جاري تحليل القنوات المكررة...</p>
+            </div>
+
+            <div class="flex space-x-4 space-x-reverse">
+                <button id="btn-run-smart-cleanup" class="flex-1 bg-[#FFC107] text-black font-black py-5 rounded-3xl shadow-xl shadow-yellow-600/10 hover:scale-105 transition-all">تأكيد وتنظيف المكتبة ⚡</button>
+                <button onclick="closeModal('modal-clean-sort')" class="flex-1 bg-white/5 py-5 rounded-3xl text-gray-400">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+    <script>
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    </script>
+</body>
+</html>
